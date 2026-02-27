@@ -13,7 +13,7 @@ class Booking extends Model
 public function users()
 { return $this->belongsTo(User::class); }
 
-public function reviews()
+public function review()
 { return $this->hasOne(Reviews::class); }
 
 }

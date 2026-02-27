@@ -3,78 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-       $roomTypes = ['зал', 'ресторан', 'летняя веранда', 'закрытая веранда'];
-       $paymentsMetod = ['наличные', 'карта', 'онлайн'];
-       return view('bookings.create', compact('roomTypes', 'paymentsMetod'));
+        $rooms = ['зал', 'ресторан', 'летняя веранда', 'закрытая веранда'];
+        $payments = ['наличные', 'карта', 'онлайн'];
+        return view('bookings.create', compact('rooms', 'payments'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $data = $request->validate([
-            'room' => 'required|in:зал, ресторан, летняя веранда, закрытая веранда',
-            'banket_date' => 'requied|date|after:today',
-            'payments' => 'required|in:наличные, карта, онлайн',
+            'room' => 'required|in:зал,ресторан,летняя веранда,закрытая веранда',
+            'banket_date' => 'required|date_format:d.m.Y|after:today',
+            'payments' => 'required|in:наличные,карта,онлайн',
         ]);
-        $bookings = Booking::create([
-            'user_id' => Auth::id(),
-            'room' => $data['room'],
-            'banket_date' => $data['banket_date'],
-            'payments' => $data['payments'],
-            'status' => 'Новая',
-        ]);
-        return redirect()->route('/profile')-with('success', 'Заявка создана и отправлена администратору');
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Booking $booking)
-    {
-        //
-    }
+        $data['banket_date'] = Carbon::createFromFormat('d.m.Y', $data['banket_date'])->format('Y-m-d');
+        $data['user_id'] = Auth::id();
+        $data['status'] = 'Новая';
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Booking $booking)
-    {
-        //
-    }
+        Booking::create($data);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Booking $booking)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Booking $booking)
-    {
-        //
+        return redirect()->route('profile')->with('success', 'Заявка создана');
     }
 }
